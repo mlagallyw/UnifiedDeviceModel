@@ -4,7 +4,7 @@
 
 Different and incompatible digital twin abstractions in major IoT cloud platforms.
 [Richard: Obviously could beef this up a bit :-)]
-
+[Michael: agreed, after the rest of the spec is finished]
 
 ## Terminology
 
@@ -14,24 +14,21 @@ Different and incompatible digital twin abstractions in major IoT cloud platform
 * Digital twin
 	A (virtual) representation of a device in an IoT Cloud Service
 
-* Device Description
-	A serialized representation of a Device
-	[Richard: I don't know what this means. It isn't the twin itself, and it isn't the model, so what is a device
-	description? This seems to be an entity with no purpose.]
-
-* Device Model (aka. Device Template, Device Blueprint)
-	A schema that describes the structure and interface of a group of devices
-	[Richard: I think it is important to avoid the word "template" or equating this to a template. A template is typically
-	something like a "mold" or stamp for producing many of a thing, but doesn't carry the notion of a persistent
-	relationship with the created thing. Device Models have a persistent relationship. Blueprint is a reasonable name]
+* Device Model (Device Blueprint)
+	A schema that defines the interface or contract of a device or a group of devices by describing the properties and behavior of a device.
+	
+* Device Instance
+	A concrete instance of a device that implements one or multiple device models.
 
 * Properties
-	A part of the device that contains state information and may change over time
-	[Richard: Is it a part of the device? Or a part of the twin? Or the model? Or all three?]
-
+	A part of the device that contains state information and may change over time. The types of properties is defined by the *Device Model*, whereas the *Device Instance* contains concrete values. 
+	
 * Messages
 	Telemetry data that is sent from the device to the cloud
 	[Richard: What about messages that go from cloud to device? What about messages not related to "data" such as alerts?]
+	[Michael: good point - we should have a more abstract message definition which includes alerts and messages to the device. 
+	todo: 
+	we have to reconsider a message definition, when we decide whether we want to include messages in the proposal]
 
 ## Microsoft's Device Twin
 
@@ -44,8 +41,8 @@ machine.
 
 The twin also contains various metadata about the device such as connection state, last activity time, and so forth.
 
-The key thing that the twin exposes is the "desired" and "reported" state of the device as two separate fields.
-[Richard: I added some more words here]
+The key elements that are exposed by a twin is the "desired" and "reported" state of the device as two separate fields.
+The Twin *does not* define the **type** of a property, tag or metadata fields. It also does not define the set of **actions** and **message formats**.
 
 ```javascript
 	{
@@ -97,32 +94,35 @@ The key thing that the twin exposes is the "desired" and "reported" state of the
 	}
 ```
 
-## Microsoft's Device API
+## Microsoft's Device Twin API
 
-Get Device Twin
-Get a device twin.
+The device twin API described at
+https://docs.microsoft.com/en-us/rest/api/iothub/devicetwinapi
+can be used to query device twin instances, to invoke direct methods and to update tags and device properties. 
 
-Invoke Device Method
+It defines the following methods:
 
-Invoke a direct method on a device.
+* Get Device Twin - Get a device twin.
 
-Update Device Twin
+* Invoke Device Method - Invoke a direct method on a device.
 
-Updates tags and desired properties of a device twin.
+* Update Device Twin - Updates tags and desired properties of a device twin.
 
-https://docs.microsoft.com/en-us/rest/api/iothub/devicetwinapi/invokedevicemethod#cloudtodevicemethod
-
+There is no formal description of the methods that are exposed by a device twin to be used by an application. The calling application somehow has to *know* the set of methods (and parameter types) e.g. from some device documentation. 
 
 ## Microsoft's Device Model Schema
 
-Microsoft uses a Device Model Schema to define simulated devices for remote monitoring. The schema defines a set of
-properties, telemetry-messages, a simulation model and cloud-to-device methods.
+Even though the device twin does not define the types of properties and the interaction with a device, there is a similar concept called **Device Model Schema**, which is used for defining a simulator for remote monitoring.
 
 https://docs.microsoft.com/en-us/azure/iot-suite/iot-suite-remote-monitoring-device-schema
-[Richard: This isn't part of the core cloud product but is part of a set of solutions you can download to get you
-started with Azure IoT. Specifically, this is for running a simulation. We need to be clear in our understanding
-that the design center for Azure IoT does not include the notion of a device model or blueprint.]
 
+The schema defines a set of properties names and values, a telemetry-message template and schema and cloud-to-device methods. 
+It defines the initial configuration of the simulation and Javascript hooks for a simulation engine.
+
+This isn't part of the core cloud product but is part of a set of solutions you can download to get you started with Azure IoT. Specifically, this is for running a simulation. 
+The design center for Azure IoT does not include the notion of a device model or blueprint.
+
+```javascript
 	{
 	  "SchemaVersion": "1.0.0",
 	  "Id": "elevator-01",
@@ -143,8 +143,9 @@ that the design center for Azure IoT does not include the notion of a device mod
 	    // Specify methods
 	  }
 	}
+```
 
-### Microsoft Device Model Schema example (chiller-02)
+### Microsoft Device Model Schema - Example (chiller-02)
 
 The following schema example from https://github.com/Azure/device-simulation-dotnet/blob/master/Services/data/devicemodels/chiller-02.json defines a device model of a chiller.
 
@@ -235,21 +236,15 @@ The example below defines the schema as well as a simulation and a set of proper
 
 ## Oracle's Device Model
 
-Oracle's device model serves as a blueprint/template to define new device instances (digital twins).
-[Richard: Our device model is not a template. A template is 'A pattern or gauge, such as a thin metal plate with a cut
-pattern, used as a guide in making something accurately, as in woodworking or the carving of architectural profiles'.
-This implies that a template is used only to create an instance, but thereafter maintains no relationship with it.
-The IoT Device Model is actually an interface definition, and maintains a relationship with the devices that claim
-to implement it. I wouldn't say it is used to define new device instances at all. Rather, the device model represents
-the interface or contract of a device dictating the properties and behavior of a device. Digital Twins use this
-contract for knowing what kind of data will come from the device and what kind of actions can be sent to the device.]
+The IoT Device Model is a schema that defines the interface or contract of a device or a group of devices by describing the properties and behavior of a device. It serves as a blueprint to programmatically interact with device instances.
+
+The IoT Device Model maintains a relationship with the devices that claim to implement it. Digital Twins use this
+contract for knowing what kind of data will come from the device and what kind of actions can be sent to the device.
 
 Device models are managed by the IoT Cloud Service platform and are used to create and register device instances. The
 IoT Cloud Service platform defines a REST-API to query, export and import device models.
 
-A device model defines a set of metadata fields, properties, actions, message formats and links.
-[Richard: I'm not sure it is worth calling out links. This is just part of the HATEOAS pattern and not intrinsic to
-what a device model is].
+A device model defines a set of metadata fields, properties, actions, and message formats.
 
 It is protocol agnostic, however it defines globally unique message formats that define the types and content of
 messages that a device model emits and receives. A device model has a globally unique id (urn) that by convention
@@ -258,7 +253,7 @@ models to be shared across IoT Cloud Services.
 
 A concrete device and it's digital twin may implement more than one device model.
 
-### Oracle device model example (chiller-02)
+### Oracle device model - example (chiller-02)
 
 	{
 	    "urn": "urn:com:oracle:iot:chiller-02",
@@ -493,13 +488,15 @@ A concrete device and it's digital twin may implement more than one device model
 	    ]
 	}
 
-# Comparison of the two device models
+# Comparison
 
-Both models define a set of properties and interactions with the device via actions.
-[Richard: We have to be clear on this point -- The Oracle Device Model is an essential part of the design space for
-Oracle IoT and defines the *contract* that the device implements, whereas the Microsoft Device Model is used for
-defining a simulated device. The Microsoft Device Model plays no part in Microsoft digital twin design, implementation,
-or use.]
+The **Oracle Device Model** is an essential part of the design space for Oracle IoT and defines the *contract* that the device implements, whereas the Microsoft Device Model is used for
+defining a simulated device. The **Microsoft Device Model Schema** plays no part in Microsoft digital twin design, implementation,
+or use.
+
+Since Microsoft's **device twin** does not describe types and interactions (methods and messages), the following section compares the **Microsoft Simulation Device Model Schema** with the **Oracle Device Model**.
+
+Both models define a set of properties, interactions via actions (methods) and message formats. There are many commonalities between the two concepts. The primary difference is
 
 ### Properties
 The **Oracle device model** defines data types for properties (simple JSON types and a few extensions: URL, time+date).
@@ -515,8 +512,7 @@ Both models define actions that can be performed on a device (and a device twin)
 not define descriptions, alias or parameter types. All actions in the example do not contain parameters. The example
 binds each action to an implementation via a Javascript file.
 
-The **Oracle device model** defines actions with a parameter of a simple JSON type. An action can have a
-description and an alias.
+The **Oracle device model** defines actions with a parameter of a simple JSON type. An action can have a description and an alias.
 
 ### Message formats
 
