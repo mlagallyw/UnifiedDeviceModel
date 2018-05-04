@@ -1,60 +1,104 @@
 # Unified Device Model Proposal
 
-## Starting point
+## What is a Device Model?
 
-Different and incompatible digital twin abstractions in major IoT cloud platforms.
-[Richard: Obviously could beef this up a bit :-)]
-[Michael: agreed, after the rest of the spec is finished]
+A device model is a formal description of a class of physical devices. 
+The description contains entries for metadata fields (tags), attributes (properties) and actions.
+
+Metadata fields contain static values such as "device manufacturer", "hardware version", "creation date".
+
+Attributes (properties) contain values that typically change over time, such as sensor readings, actuator settings, status values or configuration information.
+
+Actions are called to trigger an activity on the device.
+
+This abstract model of a device can be applied to all devices in the market. It intentionally does not talk about messages and protocols or specific program languages.
+
+## Purpose of a Device Model
+
+A device model can be used to create applications that interacts with a device. In today's world, specific applications have to be written per device class. These applications typically operate with an implicit model of a device, i.e. they contain code to manipulate device properties or to call actions. The programmer has to read a device manual to implement his application.
+
+With a device model a more generic application (or library) can be created, which can interact with all devices that implement this common description. This reduces the effort for the integration of devices in IoT scenarios.
+
+## Why a *Unified* Device Model?
+
+There are several device models in the market, which are used in conjunction with specific protocols or define a generic mechanism for protocol binding.
+Some of them are standardised in different SDOs such as the W3C, OCF, IPSO and others. 
+
+Large IoT cloud vendors also use different models in their products. Some of them only define metadata and attributes (properties) but leave it to the applications to handle actions and messages.
+
+This fragmentation limits interoperability and market adoption of IoT devices.
+
+The benefit of a unified device model is to simplify device integration and interoperability between (typically small embedded) devices and IoT service platforms from multiple vendors. 
+
+A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufactureres and cloud vendors.
+It protects the customer investment and makes device and applications future-proof, since it enables easy integration across multiple clouds.
+
+It enables migration scenarios where devices can continue to be used when one of the cloud platform providers discontinues his service.
+
+## Background 
+
+The UDM specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
+
+##### W3C Web of Things 
+[https://w3c.github.io/wot-thing-description/]()
+
+##### Microsoft's Device Twin
+[https://github.com/MicrosoftDocs/azure-docs/blob/master/articles/iot-hub/iot-hub-devguide-device-twins.md]()
+
+##### Amazon's Device Shadow
+[https://docs.aws.amazon.com/iot/latest/developerguide/what-is-aws-iot.html]()
+
+##### Mozilla's Web Thing API
+[https://iot.mozilla.org/wot/]()
 
 ## Terminology
 
-* Thing or Device
+* Device (Device-Instance)
+	
 	A physical or logical entity that is managed by an IoT Cloud Service
+	
+* Device class
+	
+	A blueprint of a group of devices that have the same properties and actions
+	
+* Digital Twin
 
-* Digital twin
 	A (virtual) representation of a device in an IoT Cloud Service
 
-* Device Model (Device Blueprint)
-	A schema that defines the interface or contract of a device or a group of devices by describing the properties and behavior of a device.
+* Device Description  
+	A textual description of a device instance
+
+* Device Model 	
+	A textual description of a device class
 	
-* Device Instance
-	A concrete instance of a device that implements one or multiple device models.
+* Property  
+	A part of the device that contains state information and may change over time
 
-* Properties
-	A part of the device that contains state information and may change over time. The types of properties is defined by the *Device Model*, whereas the *Device Instance* contains concrete values. 
+* Action  
+	A part of a device that can be invoked from the outside to change the state of a device
 	
-* Messages
-	Telemetry data that is sent from the device to the cloud
-	[Richard: What about messages that go from cloud to device? What about messages not related to "data" such as alerts?]
-	[Michael: good point - we should have a more abstract message definition which includes alerts and messages to the device. 
-	todo: 
-	we have to reconsider a message definition, when we decide whether we want to include messages in the proposal]
+* Metadata  
+	A part of the device that contains values that describe the device class or device instance
 
-## Microsoft's Device Twin
+* Messages  
+  data that is sent between the device and the cloud
+  
 
-Device twins can contain arbitrary JSON objects as both tags and properties. The Device Twin is the cloud representation
-of an actual device. Microsoft does not enforce any kind of model or schema on the type of data that can be sent from
-devices, or the type of actions that can be invoked on devices. Each twin has a device ID.
+## Microsoft's device twin
 
-"Tags" of a twin are used to save application specific data with the twin, such as the location or brand of a vending
-machine.
+Device twins can contain arbitrary JSON objects as both tags and properties. 
 
-The twin also contains various metadata about the device such as connection state, last activity time, and so forth.
 
-The key elements that are exposed by a twin is the "desired" and "reported" state of the device as two separate fields.
-The Twin *does not* define the **type** of a property, tag or metadata fields. It also does not define the set of **actions** and **message formats**.
-
-```javascript
 	{
 	    "deviceId": "myDeviceId",
 	    "etag": "AAAAAAAAAAc=",
 	    "status": "enabled",
-	    "statusUpdateTime": "0001-01-01T00:00:00",
-	    "connectionState": "Disconnected",
+	    "statusUpdateTime": "0001-01-01T00:00:00",    
+	    "connectionState": "Disconnected",    
 	    "lastActivityTime": "0001-01-01T00:00:00",
 	    "cloudToDeviceMessageCount": 0,
-	    "authenticationType": "sas",
-	    "x509Thumbprint": {
+	    "authenticationType": "sas",    
+	    "x509Thumbprint": {    
 	        "primaryThumbprint": null,
 	        "secondaryThumbprint": null
 	    },
@@ -92,37 +136,27 @@ The Twin *does not* define the **type** of a property, tag or metadata fields. I
 	        }
 	    }
 	}
-```
+	
+	
+## Microsoft's Device API
 
-## Microsoft's Device Twin API
+The Device twin API defines the following methods:
 
-The device twin API described at
+| Function | Description |
+| -------- | ----------- |
+| Get Device Twin | Get a device twin. |
+| Invoke Device Method | Invoke a direct method on a device. |
+| Update Device Twin | 	Updates tags and desired properties of a device twin. |
+
 https://docs.microsoft.com/en-us/rest/api/iothub/devicetwinapi
-can be used to query device twin instances, to invoke direct methods and to update tags and device properties. 
 
-It defines the following methods:
-
-* Get Device Twin - Get a device twin.
-
-* Invoke Device Method - Invoke a direct method on a device.
-
-* Update Device Twin - Updates tags and desired properties of a device twin.
-
-There is no formal description of the methods that are exposed by a device twin to be used by an application. The calling application somehow has to *know* the set of methods (and parameter types) e.g. from some device documentation. 
-
+	
 ## Microsoft's Device Model Schema
 
-Even though the device twin does not define the types of properties and the interaction with a device, there is a similar concept called **Device Model Schema**, which is used for defining a simulator for remote monitoring.
+Microsoft uses a Device Model Schema to define simulated devices for remote monitoring. The schema defines a set of properties, telemetry-messages, a simulation model and cloud-to-device methods.
 
 https://docs.microsoft.com/en-us/azure/iot-suite/iot-suite-remote-monitoring-device-schema
 
-The schema defines a set of properties names and values, a telemetry-message template and schema and cloud-to-device methods. 
-It defines the initial configuration of the simulation and Javascript hooks for a simulation engine.
-
-This isn't part of the core cloud product but is part of a set of solutions you can download to get you started with Azure IoT. Specifically, this is for running a simulation. 
-The design center for Azure IoT does not include the notion of a device model or blueprint.
-
-```javascript
 	{
 	  "SchemaVersion": "1.0.0",
 	  "Id": "elevator-01",
@@ -143,19 +177,18 @@ The design center for Azure IoT does not include the notion of a device model or
 	    // Specify methods
 	  }
 	}
-```
 
-### Microsoft Device Model Schema - Example (chiller-02)
+### Microsoft Device Model Schema example (chiller-02)
 
-The following schema example from https://github.com/Azure/device-simulation-dotnet/blob/master/Services/data/devicemodels/chiller-02.json defines a device model of a chiller.
+The following schema example from https://github.com/Azure/device-simulation-dotnet/blob/master/Services/data/devicemodels/chiller-02.json defines a device model of a chiller. 
 
 It defines a concrete device instance (properties and tags) with a simulation model and interactions via methods.
 The model defines a specific protocol (MQTT) and a Telemetry message template and schema for message payloads.  It describes interactions via a set of CloudToDevice methods, which are implemented by Javascript callbacks.
 
 The simulation is initialized with an initial state and an update script (chiller-02-state.js) which is
-called at regular intervals.
+called at regular intervals. 
 
-The example below defines the schema as well as a simulation and a set of properties and tags for a specific device instance.
+The example below defines the schema as well as a simulation and a set of properties and tags for a specific device instance. 
 
 	{
 	    "SchemaVersion": "1.0.0",
@@ -236,24 +269,17 @@ The example below defines the schema as well as a simulation and a set of proper
 
 ## Oracle's Device Model
 
-The IoT Device Model is a schema that defines the interface or contract of a device or a group of devices by describing the properties and behavior of a device. It serves as a blueprint to programmatically interact with device instances.
+Oracle's device model serves as a blueprint/template to define new device instances (digital twins).
+Device models are managed by the IoT Cloud Service platform and are used to create and register device instances. The IoT Cloud Service platform defines a REST-API to query, export and import device models.
 
-The IoT Device Model maintains a relationship with the devices that claim to implement it. Digital Twins use this
-contract for knowing what kind of data will come from the device and what kind of actions can be sent to the device.
+A device model defines a set of metadata fields, properties, actions, message formats and links.
+It is protocol agnostic, however it defines globally unique message formats
+A device model has a globally unique id (urn). 
 
-Device models are managed by the IoT Cloud Service platform and are used to create and register device instances. The
-IoT Cloud Service platform defines a REST-API to query, export and import device models.
+A concrete device and it's digital twin may implement more than one device models. 
 
-A device model defines a set of metadata fields, properties, actions, and message formats.
+### Oracle device model example (chiller-02) 
 
-It is protocol agnostic, however it defines globally unique message formats that define the types and content of
-messages that a device model emits and receives. A device model has a globally unique id (urn) that by convention
-follows reverse DNS naming conventions, similar to Java packages. This design allows for a global repository of device
-models to be shared across IoT Cloud Services.
-
-A concrete device and it's digital twin may implement more than one device model.
-
-### Oracle device model - example (chiller-02)
 
 	{
 	    "urn": "urn:com:oracle:iot:chiller-02",
@@ -487,651 +513,189 @@ A concrete device and it's digital twin may implement more than one device model
 	        }
 	    ]
 	}
+	
+# Comparison of the two device models
 
-# Comparison
-
-The **Oracle Device Model** is an essential part of the design space for Oracle IoT and defines the *contract* that the device implements, whereas the Microsoft Device Model is used for
-defining a simulated device. The **Microsoft Device Model Schema** plays no part in Microsoft digital twin design, implementation,
-or use.
-
-Since Microsoft's **device twin** does not describe types and interactions (methods and messages), the following section compares the **Microsoft Simulation Device Model Schema** with the **Oracle Device Model**.
-
-Both models define a set of properties, interactions via actions (methods) and message formats. There are many commonalities between the two concepts. The primary difference is
+Both models define a set of properties and interactions with the device via actions.
 
 ### Properties
 The **Oracle device model** defines data types for properties (simple JSON types and a few extensions: URL, time+date).
-A type range may be specified for numeric types; write access can be restricted. Properties may contain a description
-and an alias.
+A type range may be specified for numeric types; write access can be restricted.
+Properties may contain a description and an alias.
 
-The properties in the **Microsoft device model** example are plain JSON values. The example does not contain types and
-type ranges, description or alias fields.
+The properties in the **Microsoft device model** example are plain JSON values. The example does not contain types and type ranges, description or alias fields.
 
 ### Actions
 
-Both models define actions that can be performed on a device (and a device twin). The **Microsoft device model** does
-not define descriptions, alias or parameter types. All actions in the example do not contain parameters. The example
-binds each action to an implementation via a Javascript file.
+Both models define actions that can be performed on a device (and a device twin). The **Microsoft device model** does not define descriptions, alias or parameter types. All actions in the example do not contain parameters. The example binds each action to an implementation via a Javascript file.
 
-The **Oracle device model** defines actions with a parameter of a simple JSON type. An action can have a description and an alias.
+The **Oracle device model** defines actions with **only a single** parameter of a **primitive JSON** type. An action can have a
+description and an alias.
 
-### Message formats
+### Message protocols and formats
 
-Both models provide a way to define the payload structure of messages.
-
-# A unified approach
-
-Define a common device model for describing digital twins at the enterprise side.
-Protocol agnostic, security mechanism and lifecycle are initially out of scope.
-
-Devices following this model can be defined by device manufacturers or cloud vendors
-and can be shared across different cloud platforms. Enterprise applications can use
-digital twins in the same way, independently from which cloud vendor is hosting them.
-
-[Richard: We need to have an in depth discussion here of *why* this matters. Does it? If I'm Microsoft, I want to know
-why I have to take on all this additional complexity to define this contract. Microsoft IoT sees itself as a
-pass-through system, part of a constellation of services needed to create an IoT solution. Oracle IoT on the other hand
-is a complete, comprehensive solution with vertical applications. As an application agnostic platform, Microsoft is
-able to wave their hands about things like message formats, whereas for Oracle IoT with built in analytics and vertical
-apps, knowing the structure of messages is crucial.]
-
-[Richard: So, if I'm Microsoft and I'm doing a platform and not a vertical app, why do I care about Device Model
-contracts? They're going to make development more difficult by creating a longer modify-build-test cycle. Is there a
-way in which Device Models can be skipped and do things dynamically and have it work? Or are we convinced that
-Device Models with concrete contracts the only way to build stable systems and can clearly articulate that?]
-
-### Common set of metadata fields
-
-The set of metadata values are limited to plain JSON types only.
-
-[Richard: Are we talking device models here or digital twins! "activationTime" is related to a digital twin, not a 
-device model. Same for "id" and "hardwareId", and yet you then have Property and Actions sections that are related
-to the device model! This keeps getting conflated but they are fundamentally different things.]
-
-#### candidates
-
-            "id": "FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC",
-            "hardwareId": "FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC-Oracle-CH101-SerialNr 1234",
-            "type": "DIRECTLY_CONNECTED_DEVICE",
-            "description": "Sample Chiller Device Twin 1",
-            "created": 1524654286431,
-            "createdAsString": "2018-04-25T11:04:46.431Z",
-            "activationTime": 1524654287241,
-            "activationTimeAsString": "2018-04-25T11:04:47.241Z",
-            "state": "ACTIVATED",
-            "name": "Chiller-02-1",
-            "manufacturer": "Oracle",
-            "modelNumber": "CH101",
-            "serialNumber": "SerialNr 1234",
-            "hardwareRevision": "",
-            "softwareRevision": "",
-            "softwareVersion": "",
-            "enabled": true
+Both models provide a way to define the payload structure of messages between the device and the cloud service via message formats. Even though the payload formats are defined in the model, the actual transport protocols are usually proprietary and not exposed through the model.
 
 
-### Property
+# Unified Device Model
 
-        {
-            "alias": "ora_lon",
-            "name": "ora_longitude",
-            "range": "-180.0,180.0",
-            "type": "NUMBER",
-            "writable": false
-        }
+The following section defines a common device model for describing device classes.
+The device model intentionally is protocol agnostic. 
+Also device onboarding, lifecycle operations and security mechanisms are out of scope.
 
+Devices following this model can be defined by device manufacturers or cloud vendors and can be shared across different cloud platforms. Enterprise applications can use
+these descriptions in the same way to use digital twin instances hosted as virtual device representations in the cloud.
 
-#### Actions
+The model is intentionally kept as simple as possible to accomodate for very resource constrained devices. Therefore it does not include complex types, actions with optional parameters, defaults or multiple return parameters. This may appear simplistic, however it serves the purpose to minimize the implementation effort on a device.
 
-        {
-            "alias": "IncreasePressure-method",
-            "argType": "INTEGER",
-            "description": "Increase the pressure with the value in the argument",
-            "name": "IncreasePressure",
-            "range": "0,5"
-        }
+## Capabilities of the model
 
+The device model serves as an intermediate between devices and cloud services. Since it describes the device in an abstract way, it does not contain protocol bindings.
+Rather it defines the commonalities of a device, which are available for all connected cloud services:
 
-#### Message formats
+All devices contain metadata, attributes (properties) and actions. 
 
-t.b.d. in phase 2
+### Metadata
 
+The model defines a set of mandatory metadata fields that must be provided by all implementing devices. It also defines a set of optional metadata fields. This is necessary to ensure the minimum interoperability guarantees of the model. The set of metadata fields can be extended with vendor specific additional fields.
 
+### Properties
 
+Properties can be read and some of them can be written by the cloud application. Properties have a primitive type and optionally have a unit and a range. They may carry a semantic type. If complex types are required, these should be marshalled in a string.
 
-# JSON schema (http://json-schema.org) for the Oracle device model (informative)
+### Actions
 
-	{
-		"$schema ": "http: //json-schema.org/schema#",
-	    "id": "http://oracle.com/schemas/device-model.json",
-		"title": "Oracle Device Model",
-		"description": "JSON Schema representation of the Oracle device model serialisation format.",
+A cloud application can invoke actions on the device. 
 
-		"type": "object",
+An action has a name, a set of input parameters and a result value. An action is synchronous and can return a simple type as return value. 
 
-		"properties": {
-			"urn": { "type": "string" },
-			"name": { "type": "string" },
-			"description": { "type": "string" },
-	        "system" : { "type" : "boolean" },
-	        "draft": { "type" : "boolean" },
-	  		"created": { "type": "integer" },
-	  		"createdAsString": { "type": "string" },
-	  		"lastModified": { "type": "integer" },
-	  		"lastModifiedAsString": { "type": "string" },
-	  		"userLastModified": { "type": "string" },
+### Semantic types
 
-			"attributes": { "type": "array",
-	                        "items": { "$ref": "#/definitions/attribute" } },
-			"actions": { "type": "array",
-	                     "items": { "$ref": "#/definitions/action" } },
-			"formats": { "type": "array",
-	                     "items": { "$ref": "#/definitions/format" } },
-	        "links": { "type": "array",
-					   "items": { "$ref": "#/definitions/link" } }
-		},
-		"required": ["urn", "name", "description", "attributes"],
-		"additionalProperties": false,
+The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal  as well as domain-specific ontologies will be defined in the near future within different verticals. 
+A recommended set of universal semantic annotations will be defined in a later version of this document.
 
-	 	"definitions": {
-	        "format_type" : { "enum": [ "ALERT", "DATA" ] },
-	        "primitive_type" : { "enum": [ "NUMBER", "STRING", "BOOLEAN", "DATETIME", "INTEGER" ] },
+### Protocols
 
-		    "format_items": {
-				"type": "object",
-				"fields": {
-				 	"type": "array",
-				 	"items": {
-				    	 	"name": { "type": "string" },
-				     	"type": { "type": { "$ref": "#/definitions/primitive_type" } },
-				     	"optional": { "type": "boolean" }
-				 	},
-					"required": [ "name", "type" ]
-				}
-	        },
+A device is typically bound to a communication protocol on the cloud facing side and on the (local) network facing side: The cloud facing side provides a binding to one or more IoT cloud services. This binding is typically done with a client library, which encapsulates the details of the messaging implementation. 
 
-			"attribute": {
-				"type": "object",
-				"properties": {
-					"name": { "type": "string" },
-	                "alias": { "type": "string" },
-					"description": { "type": "string" },
-					"type" : { "$ref": "#/definitions/primitive_type" },
-	                "range": { "type": "string" },
-	                "writable": { "type": "boolean" },
-	                "defaultValue": {
-	                    "oneOf": [
-	                          { "type" : "boolean" },
-	                          { "type" : "number" },
-	                          { "type" : "string" }
-	                     ]
-	                }
-		   	    },
-		   	    	"required": [ "name", "description", "type" ]
-	        },
+On the (local) network facing side a suite of both standard as well as proprietary protocols is used.
 
-			"action": {
-				"type": "object",
-				"properties": {
-					"name": { "type": "string" },
-					"description": { "type": "string" },
-					"argType" : { "$ref": "#/definitions/primitive_type" }
-				},
-				"required": [ "name", "description" ]
-			},
+Protocols and message formats are abstracted in this device model and are encasulated either in the device to local network implementation or the generic proxy library.
 
-			"format": {
-				"type": "object",
-				"properties": {
-	       	        "urn": { "type": "string" },
-					"name": { "type": "string" },
-					"description": { "type": "string" },
-					"type" : { "$ref": "#/definitions/format_type" },
-	                "value": { "$ref": "#/definitions/format_items" }
-				}
-			},
+### Generic proxy library
+ 
+If a device provides a device model description and exposes an API for accessing the attributes and actions, it is possible to bind the device via a common library to different IoT cloud services. This library is the same for all kinds of devices and contains adapters for different cloud services. The adapters take care of the protocol interaction between the device and the cloud service.   
 
-			"link": {
-				"type": "object",
-				"properties": {
-					"href": { "type": "string" },
-					"rel": { "type": "string" }
-				},
-				"required": ["href", "rel"]
-			}
-		}
-	}
+![](common-library.png)
 
+## What can not be done with this model?
 
-# A concrete Oracle device twin that implements several device models
-[Richard: Where are the "desired" or "reported" states? This below isn't our virtual device, but this is our current
-device object. We have Device Objects, Device Models, Virtual Devices, and Message Formats. We don't actually have a
-JSON document today representing the "digital twin" as such. We need one, but the below doesn't have everyting that
-is needed. We have some messiness we need to resolve w.r.t. virtual devices.]
+Since protocols and message formats are not part of the device model, these aspects are handled by an application on the device, which maps the device behavior to the cloud specific messaging mechanism.	
+	
+## Unified Device Model Description 
 
-[Richard: A Device Model represents a contract with the device, and a single device can implement multiple device
-models, exactly like how a single class in Java can implement multiple interfaces.]
+A **device model description** is a JSON file with the following EBNF grammar. 
 
-[Richard: A Device is a record in the database that represents the device. It has timestamps, description, IDs, etc.]
+	device_mode_description = '{'
+   			metadata_section
+   			[ attribute_section ]
+   			[ action_section ]
+		'}' ;
+	
+	metadata_section = 
+		standard_metadata
+		[ vendor_extension_metadata ] ;
+	
+	standard_metadata =
+		'"urn"' ':' '"'urn_type'"' ','
+		'"name"' ':' '"'js_identifier'"' ','
+        [ '"semantic_type"' ':' js_string "," ] 
+        [ '"manufacturer"' ':' js_string ',' ]
+        [ '"modelNumber"' ':' js_string ',' ]
+        [ '"serialNumber"' ':' js_string ',' ]
+        [ '"hardwareRevision"' ':' js_string ',' ]
+        [ '"softwareRevision"' ':' js_string ','] 
+  		[ '"softwareVersion"' ':' js_string ',' ]
+		[ '"author"' ':' js_string ',' ]
+		[ '"version"' ':' js_string ',' ]
+		[ '"loc_latitude"' ':' js_number ',' 
+		  '"loc_longitude"' ':' js_number ',' 
+		  '"loc_height"' ':' js_number ',' ]
+	   	'"description"' ':' "<human-readable description as js_string>" ','
+	   	'"created"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
+	   	'"createdAsString"' ':' js_date ','
+	   	'"lastModified"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
+	    '"lastModifiedAsString"' ':' js_date ','
+	    '"userLastModified"' ':' js_string ;
+	    
+	vendor_extension_metadata =
+		js_identifier ':' value_type |
+		 [ js_identifier ':' value_type ',' vendor_extension_metadata ]
+		
+	attribute_section = '"attributes"' ':' '[' attribute_declarations ']' ',' ;
+		
+	attribute_declaration = attribute |
+		[ attribute ',' attribute_declaration ]
+		
+	attribute = '{'
+	            '"name"' ':' js_string ","
+	            [ '"alias"' ':' js_string "," ]
+	            '"description"' ':' js_string ","
+	            '"type"' ':' attribute_type ","
+	            [ '"semantic_type"' ':' js_string "," ] 
+	            [ '"unit"' ':' js_string "," ]
+	            [ '"range"' ':' '"' js_number ',' js_number '"' "," ]
+	            '"writable"' ':' 'true' | 'false' 
+	        	'}' ;
+	        	
+	action_section = '"actions"' ':' '[' action_declarations ']' ',' ;
+		
+	action_declaration = action |
+		[ action ',' action_declaration ]
+		
+	action = '{'
+	            '"name"' ':' js_string ","
+	            [ '"alias"' ':' js_string "," ]
+	            '"description"' ':' js_string ","
+	            [ '"semantic_type"' ':' js_string "," ] 
+	            [ '"argType"' ':' primitive_type "," ]
+	            [ '"range"' ':' '"' js_number ',' js_number '"' ]
+	        	'}' ;	        	
 
-[Richard: A Virtual Device is the per-device-instance of the device model. It has attributes (properties) and such.]
+	attribute_type = primitive_type | "array" | "object" ;
 
-[Richard: This design works because it allows a single Device to implement multiple Device Models and provides
-namespacing for each Device Model, such that each Device Model can define its own names without worrying about conflict
-should the same name be defined by two Device Models both implemented by a single Device. Unfortunately, this design is
-horrible from a conceptual / complexity perspective. Was it over-engineered for real-world cases? Possibly. However it
-did give us some nice benefits in our Gateway design, where we could implement internal things like "ping" testing as
-a Device Model that all devices using our client library would implement.]
+	primitive_type = "number" | "string" | "boolean" | "datetime" | "integer" | "uri" ;
+	
+	urn_type = <a valid URN as defined in https://tools.ietf.org/rfc/rfc2141.txt>
+	
+	uri_type = <a valid URI as defined by https://tools.ietf.org/rfc/rfc3986.txt>
+	
+	js_identifier = <a valid ECMAScript identifier as defined in
+	http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
-[Richard: So where does a Digital Twin really fit into our system? Is it a Virtual Device? The Device object itself?
-Or is it some new entity that is a cross between Virtual Devices and Device objects? One thing is clear, it isn't the
-device model (although it may refer to a device model, and may even embed the device model attributes, it isn't the
-model itself. The ramification of this means that you **cannot** edit the device model portion of a digital twin,
-you can only read it. To edit it, you would have to go find the corresponding device model and edit **that**, and if it
-were supplied by a vendor as opposed to the developer themselves, it might not even be editable).]
+	js_number = <a valid ECMAScript number as defined in
+	http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
+	
+	js_string = <a valid ECMAScript string as defined in
+	http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
-[Richard: I feel like the Digital Twin should be a combination of Virtual Device and Device, and the model can be
-embedded like it is today. The Digital Twin can have an ID, but the ID will not be the device ID, or the hardware ID.
-Rather, it is the Digital Twin ID. To get a Digital Twin, you would need to know the device ID and the Device Model
-URN so that you can find a Digital Twin that represents that aspect of the Device. OR, you have to accept that fact that
-properties *do not* live on the Digital Twin directly, but are nested based on the device ID. Either approach is
-logically consistent with the notion of a device implementing multiple device models. The other thing we can do is
-revisit that notion that a device *can* implement multiple device models, and say that no, it cannot, and we were
-wrong to do so, and should go back to an earlier design where we had "capabilities" as separate things from device
-models and a device could implement multiple capabilities (like ping) without having them be device models. In any
-event I think multiple device models makes sense for some use cases (for example a vendor may have a device that
-conforms to one or more "standard" device model specifications but also has their own device model full of other
-goodies and vendor extensions).]
+	js_language_type = <a valid ECMAScript language type as defined in
+	chapter 6 of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
-        {
-            "id": "FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC",
-            "hardwareId": "FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC-Oracle-CH101-SerialNr 1234",
-            "type": "DIRECTLY_CONNECTED_DEVICE",
-            "description": "Sample Chiller Device Twin 1",
-            "created": 1524654286431,
-            "createdAsString": "2018-04-25T11:04:46.431Z",
-            "activationTime": 1524654287241,
-            "activationTimeAsString": "2018-04-25T11:04:47.241Z",
-            "state": "ACTIVATED",
-            "name": "Chiller-02-1",
-            "manufacturer": "Oracle",
-            "modelNumber": "CH101",
-            "serialNumber": "SerialNr 1234",
-            "hardwareRevision": "",
-            "softwareRevision": "",
-            "softwareVersion": "",
-            "enabled": true,
-            "deviceModels": [
-                {
-                    "urn": "urn:com:oracle:iot:chiller-02",
-                    "name": "chiller-02",
-                    "description": "Faulty chiller with wrong pressure sensor. Pressure too high.",
-                    "system": false,
-                    "draft": false,
-                    "created": 1524652689668,
-                    "createdAsString": "2018-04-25T10:38:09.668Z",
-                    "lastModified": 1524653984604,
-                    "lastModifiedAsString": "2018-04-25T10:59:44.604Z",
-                    "userLastModified": "IoTAdmin",
-                    "attributes": [
-                        {
-                            "description": "",
-                            "name": "Type",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Firmware",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Model",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Location",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Latitide",
-                            "type": "NUMBER",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Longitude",
-                            "type": "NUMBER",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "Location_tag",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "floor level",
-                            "name": "Floor_tag",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "name of the campus",
-                            "name": "Campus_tag",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "online status",
-                            "name": "online",
-                            "type": "BOOLEAN",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "temperature",
-                            "type": "NUMBER",
-                            "writable": true
-                        },
-                        {
-                            "description": "C for Celsius, F for Fahrenheit",
-                            "name": "termperature_unit",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "humidity of the chiller",
-                            "name": "humidity",
-                            "type": "NUMBER",
-                            "writable": true
-                        },
-                        {
-                            "description": "percentage or grams per m3",
-                            "name": "humidity_unit",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "description": "",
-                            "name": "pressure",
-                            "type": "NUMBER",
-                            "writable": true
-                        },
-                        {
-                            "description": "psi or pascal or bar",
-                            "name": "pressure_unit",
-                            "type": "STRING",
-                            "writable": true
-                        },
-                        {
-                            "alias": "ora_lat",
-                            "name": "ora_latitude",
-                            "range": "-90.0,90.0",
-                            "type": "NUMBER",
-                            "writable": false
-                        },
-                        {
-                            "alias": "ora_lon",
-                            "name": "ora_longitude",
-                            "range": "-180.0,180.0",
-                            "type": "NUMBER",
-                            "writable": false
-                        },
-                        {
-                            "alias": "ora_alt",
-                            "name": "ora_altitude",
-                            "type": "NUMBER",
-                            "writable": false
-                        },
-                        {
-                            "alias": "ora_accuracy",
-                            "name": "ora_uncertainty",
-                            "type": "NUMBER",
-                            "writable": false
-                        },
-                        {
-                            "name": "ora_zone",
-                            "type": "STRING",
-                            "writable": false
-                        },
-                        {
-                            "alias": "ora_mssi",
-                            "name": "ora_txPower",
-                            "type": "INTEGER",
-                            "writable": false
-                        },
-                        {
-                            "name": "ora_rssi",
-                            "type": "NUMBER",
-                            "writable": false
-                        }
-                    ],
-                    "actions": [
-                        {
-                            "alias": "Reboot-method",
-                            "description": "Reboot the chiller",
-                            "name": "Reboot"
-                        },
-                        {
-                            "alias": "FirmwareUpdate-method",
-                            "argType": "STRING",
-                            "description": "Update the firmware to the version specified in the argument",
-                            "name": "FirmwareUpdate"
-                        },
-                        {
-                            "alias": "EmergencyValveRelease-method",
-                            "description": "Open valve for emergency reasons",
-                            "name": "EmergencyValveRelease"
-                        },
-                        {
-                            "alias": "IncreasePressure-method",
-                            "argType": "INTEGER",
-                            "description": "Increase the pressure with the value in the argument",
-                            "name": "IncreasePressure",
-                            "range": "0,5"
-                        }
-                    ],
-                    "formats": [
-                        {
-                            "urn": "urn:com:oracle:iot:chiller-02-sensors",
-                            "name": "chillersensors",
-                            "description": "",
-                            "type": "DATA",
-                            "deviceModel": "urn:com:oracle:iot:chiller-02",
-                            "value": {
-                                "fields": [
-                                    {
-                                        "name": "temperature",
-                                        "optional": false,
-                                        "type": "NUMBER"
-                                    },
-                                    {
-                                        "name": "temperature_unit",
-                                        "optional": false,
-                                        "type": "STRING"
-                                    },
-                                    {
-                                        "name": "humidity",
-                                        "optional": false,
-                                        "type": "NUMBER"
-                                    },
-                                    {
-                                        "name": "humidity_unit",
-                                        "optional": false,
-                                        "type": "STRING"
-                                    },
-                                    {
-                                        "name": "pressure",
-                                        "optional": false,
-                                        "type": "NUMBER"
-                                    },
-                                    {
-                                        "name": "pressure_unit",
-                                        "optional": false,
-                                        "type": "STRING"
-                                    }
-                                ]
-                            },
-                            "sourceId": "urn:com:oracle:iot:chiller-02",
-                            "sourceType": "DEVICE_MODEL"
-                        }
-                    ]
-                },
-                {
-                    "urn": "urn:oracle:iot:dcd:capability:message_dispatcher",
-                    "name": "Message Dispatcher Capability",
-                    "description": "Oracle IoT device capability definition for messaging dispatcher",
-                    "system": true,
-                    "draft": false,
-                    "created": 1515576128000,
-                    "createdAsString": "2018-01-10T09:22:08.000Z",
-                    "lastModified": 1515576128000,
-                    "lastModifiedAsString": "2018-01-10T09:22:08.000Z",
-                    "userLastModified": "iot",
-                    "attributes": [],
-                    "actions": [],
-                    "formats": [
-                        {
-                            "urn": "urn:oracle:iot:dcd:capability:message_dispatcher:overflow",
-                            "name": "Message Dispatcher Overflow Alert Message",
-                            "description": "Gateway logging message overflow alert message format definition for message dispatcher.",
-                            "type": "ALERT",
-                            "deviceModel": "urn:oracle:iot:dcd:capability:message_dispatcher",
-                            "value": {
-                                "fields": [
-                                    {
-                                        "name": "description",
-                                        "optional": false,
-                                        "type": "STRING"
-                                    },
-                                    {
-                                        "name": "maxNumMessages",
-                                        "optional": false,
-                                        "type": "INTEGER"
-                                    }
-                                ]
-                            },
-                            "sourceId": "urn:oracle:iot:dcd:capability:message_dispatcher",
-                            "sourceType": "DEVICE_MODEL"
-                        }
-                    ]
-                },
-                {
-                    "urn": "urn:oracle:iot:dcd:capability:direct_activation",
-                    "name": "Direct Activation Capability",
-                    "description": "Oracle IoT capability definition for direct device activation",
-                    "system": true,
-                    "draft": false,
-                    "created": 1515576128000,
-                    "createdAsString": "2018-01-10T09:22:08.000Z",
-                    "lastModified": 1515576128000,
-                    "lastModifiedAsString": "2018-01-10T09:22:08.000Z",
-                    "userLastModified": "iot",
-                    "attributes": [],
-                    "actions": [],
-                    "formats": []
-                },
-                {
-                    "urn": "urn:oracle:iot:dcd:capability:diagnostics",
-                    "name": "Device Diagnostics",
-                    "description": "Oracle IoT capability definition for device diagnostics",
-                    "system": true,
-                    "draft": false,
-                    "created": 1515576128000,
-                    "createdAsString": "2018-01-10T09:22:08.000Z",
-                    "lastModified": 1515576128000,
-                    "lastModifiedAsString": "2018-01-10T09:22:08.000Z",
-                    "userLastModified": "iot",
-                    "attributes": [],
-                    "actions": [],
-                    "formats": [
-                        {
-                            "urn": "urn:oracle:iot:dcd:capability:diagnostics:test_message",
-                            "name": "Diagnostics Test Connectivity Data Message",
-                            "description": "Test connectivity data message format definition for device diagnostics.",
-                            "type": "DATA",
-                            "deviceModel": "urn:oracle:iot:dcd:capability:diagnostics",
-                            "value": {
-                                "fields": [
-                                    {
-                                        "name": "current",
-                                        "optional": false,
-                                        "type": "INTEGER"
-                                    },
-                                    {
-                                        "name": "count",
-                                        "optional": false,
-                                        "type": "INTEGER"
-                                    },
-                                    {
-                                        "name": "payload",
-                                        "optional": false,
-                                        "type": "STRING"
-                                    }
-                                ]
-                            },
-                            "sourceId": "urn:oracle:iot:dcd:capability:diagnostics",
-                            "sourceType": "DEVICE_MODEL"
-                        }
-                    ]
-                }
-            ],
-            "logs": {
-                "logCount": 1,
-                "logType": "ACTIVATION",
-                "logs": [
-                    {
-                        "timeStamp": "2018-04-25T11:04:47Z",
-                        "message": "Device Activated"
-                    }
-                ]
-            },
-            "connectivityStatus": "ONLINE",
-            "lastHeardTime": 1524660118821,
-            "onlineSinceTime": 1524660118821,
-            "onlineSinceTimeAsString": "2018-04-25T12:41:58.821Z",
-            "lastHeardTimeAsString": "2018-04-25T12:41:58.821Z",
-            "links": [
-                {
-                    "href": "https://129.144.182.85:443/iot/api/v2/devices/FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC",
-                    "rel": "self"
-                }
-            ],
-            "devices": {
-                "links": [
-                    {
-                        "href": "https://129.144.182.85:443/iot/api/v2/devices/FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC/devices",
-                        "rel": "self"
-                    }
-                ]
-            },
-            "software": {
-                "links": [
-                    {
-                        "href": "https://129.144.182.85:443/iot/api/v2/devices/FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC/software",
-                        "rel": "self"
-                    }
-                ]
-            },
-            "metadata": {
-                "links": [
-                    {
-                        "href": "https://129.144.182.85:443/iot/api/v2/devices/FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC/metadata",
-                        "rel": "self"
-                    }
-                ]
-            },
-            "location": {
-                "links": [
-                    {
-                        "href": "https://129.144.182.85:443/iot/api/v2/devices/FBE6F52D-CCE1-40F5-9C81-9F4B5C7F37CC/location",
-                        "rel": "self"
-                    }
-                ]
-            }
-        },
+	
+	js_date = <a valid ECMAScript date as defined in chapter '20.3.1.16 Date Time String Format' of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
+
+	
+## Device API 
+
+==-- needs more work --==
+
+	interface Device {
+	    String name;
+	    String getDeviceModel();
+	
+	    any readProperty(String name);
+	    void writeProperty(String name, any value);
+	    any  invokeAction(String name, any parameters);
+	};
+
