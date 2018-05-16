@@ -572,7 +572,7 @@ An action has a name, a set of input parameters and a result value. An action is
 ### Semantic types
 
 The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal  as well as domain-specific ontologies will be defined in the near future within different verticals. 
-A recommended set of universal semantic annotations will be defined in a later version of this document.
+A recommended set of universal semantic annotations is defined below.
 
 ### Protocols
 
@@ -596,7 +596,7 @@ Since protocols and message formats are not part of the device model, these aspe
 
 A **device model description** is a JSON file with the following EBNF grammar. 
 
-	device_mode_description = '{'
+	device_model_description = '{'
    			metadata_section
    			[ attribute_section ]
    			[ action_section ]
@@ -630,12 +630,12 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	    
 	vendor_extension_metadata =
 		js_identifier ':' value_type |
-		 [ js_identifier ':' value_type ',' vendor_extension_metadata ]
+		 [ js_identifier ':' value_type ',' vendor_extension_metadata ] ;
 		
 	attribute_section = '"attributes"' ':' '[' attribute_declarations ']' ',' ;
 		
 	attribute_declaration = attribute |
-		[ attribute ',' attribute_declaration ]
+		[ attribute ',' attribute_declaration ] ;
 		
 	attribute = '{'
 	            '"name"' ':' js_string ","
@@ -651,14 +651,14 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	action_section = '"actions"' ':' '[' action_declarations ']' ',' ;
 		
 	action_declaration = action |
-		[ action ',' action_declaration ]
+		[ action ',' action_declaration ] ;
 		
 	action = '{'
 	            '"name"' ':' js_string ","
 	            [ '"alias"' ':' js_string "," ]
 	            '"description"' ':' js_string ","
 	            [ '"semantic_type"' ':' js_string "," ] 
-	            [ '"argType"' ':' primitive_type "," ]
+	            [ '"argType"' ':' attribute_type "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' ]
 	        	'}' ;	        	
 
@@ -681,11 +681,17 @@ A **device model description** is a JSON file with the following EBNF grammar.
 
 	js_language_type = <a valid ECMAScript language type as defined in
 	chapter 6 of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
-
 	
 	js_date = <a valid ECMAScript date as defined in chapter '20.3.1.16 Date Time String Format' of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
-	
+
+## Unified Device Model Instance 
+
+A **device model Instance** is a JSON file with the following EBNF grammar. 
+
+universal semantic annotations
+
+
 ## Device API 
 
 ==-- needs more work --==
