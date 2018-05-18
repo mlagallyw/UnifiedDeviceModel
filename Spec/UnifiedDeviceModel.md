@@ -589,10 +589,19 @@ For asynchronous operations, where the caller must be immediately notified about
 
 ### Semantic types
 
-The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal  as well as domain-specific ontologies will be defined in the near future within different verticals. 
-A recommended set of universal semantic annotations is defined below. They are based on the SI units https://en.wikipedia.org/wiki/International_System_of_Units and the https://en.wikipedia.org/wiki/United_States_customary_units.
+The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal as well as domain-specific ontologies will be defined in the near future within different verticals. 
 
-This specification does not give a preference to one of the systems, however it is recommended that implementations agree on a minimum set of supported types and units to ensure interoperability. The SI system is a good candidate for this purpose.
+#### Semantic device types
+
+A  set of semantic annotations for devices is defined below. A device can implement multiple device types simultaneously.
+
+==-- needs more work --==
+
+#### Semantic property types
+
+A  set of universal semantic types for properties is defined below. They are based on the SI units https://en.wikipedia.org/wiki/International_System_of_Units and the United States customary units https://en.wikipedia.org/wiki/United_States_customary_units.
+
+This specification does not give a preference to one of the systems, however it is recommended that we agree on a core set of supported types and units to ensure interoperability. The SI system is a good candidate for this purpose.
 
 semantic_type | Unit | Description | Notes |
 ------------- | ---- | ----------- |-----|
@@ -628,6 +637,21 @@ payment_card_cvc | | card verification code |
 Note: The references to Wikipedia articles are informative and have the purpose to explain the concepts.
 The cited standards contain the normative requirements.
 
+#### Semantic action types
+
+A  set of semantic types for actions is defined below. They give clear semantics to actions that
+are marked with these types.
+
+==-- needs more work --==
+
+* get 
+* put
+* post 
+* delete
+* invoke
+* reset
+
+
 ### Protocols
 
 A device is typically bound to a communication protocol on the cloud facing side and on the (local) network facing side: The cloud facing side provides a binding to one or more IoT cloud services. This binding is typically done with a client library, which encapsulates the details of the messaging implementation. 
@@ -648,7 +672,7 @@ Since protocols and message formats are not part of the device model, these aspe
 	
 ## Device Model Description 
 
-A **device model description** is a JSON file with the following EBNF grammar. 
+A **device model description** is a JSON file with the following EBNF grammar: 
 
 	device_model_description = '{'
    			metadata_section
@@ -663,57 +687,53 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	standard_metadata =
 		'"urn"' ':' '"'urn_type'"' ','
 		'"name"' ':' '"'js_identifier'"' ','
-        [ '"semantic_type"' ':' js_string "," ] 
-        [ '"manufacturer"' ':' js_string ',' ]
-        [ '"modelNumber"' ':' js_string ',' ]
-        [ '"serialNumber"' ':' js_string ',' ]
-        [ '"hardwareRevision"' ':' js_string ',' ]
-        [ '"softwareRevision"' ':' js_string ','] 
+        	[ '"semantic_type"' ':' js_string "," ] 
 		[ '"author"' ':' js_string ',' ]
 		[ '"version"' ':' js_string ',' ]
-		[ '"loc_latitude"' ':' js_number ',' 
-		  '"loc_longitude"' ':' js_number ',' 
-		  '"loc_height"' ':' js_number ',' ]
 	   	'"description"' ':' "<human-readable description as js_string>" ','
 	   	'"created"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
 	   	'"createdAsString"' ':' js_date ','
 	   	'"lastModified"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
-	    '"lastModifiedAsString"' ':' js_date ','
-	    '"userLastModified"' ':' js_string ;
+	    	'"lastModifiedAsString"' ':' js_date ','
+	    	'"userLastModified"' ':' js_string ;
 	    
 	vendor_extension_metadata =
-		js_identifier ':' value_type |
-		 [ js_identifier ':' value_type ',' vendor_extension_metadata ] ;
+		"vnd_"js_identifier ':' value_type |
+		 [ "vnd_"js_identifier ':' value_type ',' vendor_extension_metadata ] ;
 		
-	attribute_section = '"attributes"' ':' '[' attribute_declarations ']' ',' ;
+	attribute_section = '"properties"' ':' '[' attribute_declarations ']' ',' ;
 		
 	attribute_declaration = attribute |
 		[ attribute ',' attribute_declaration ] ;
 		
-	attribute = '{'
-	            '"name"' ':' js_string ","
-	            [ '"alias"' ':' js_string "," ]
+	attribute = attribute_name ":" '{'
+	            [ '"name"' ':' attribute_name "," ]    
+	            [ '"alias"' ':' js_identifier "," ]
 	            '"description"' ':' js_string ","
 	            '"type"' ':' attribute_type ","
-	            [ '"semantic_type"' ':' js_string "," ] 
+	            [ '"semantic_type"' ':' js_identifier "," ] 
 	            [ '"unit"' ':' js_string "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' "," ]
 	            '"writable"' ':' 'true' | 'false' 
-	        	'}' ;
+	        '}' ;
+		
+	attribute_name = js_identifier ;
 	        	
 	action_section = '"actions"' ':' '[' action_declarations ']' ',' ;
 		
 	action_declaration = action |
 		[ action ',' action_declaration ] ;
 		
-	action = '{'
-	            '"name"' ':' js_string ","
-	            [ '"alias"' ':' js_string "," ]
+	action = action_name ":" '{'
+	            [ '"name"' ':' action_name "," ]
+	            [ '"alias"' ':' js_identifier "," ]
 	            '"description"' ':' js_string ","
-	            [ '"semantic_type"' ':' js_string "," ] 
+	            [ '"semantic_type"' ':' js_identifier "," ] 
 	            [ '"argType"' ':' attribute_type "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' ]
-	        	'}' ;	        	
+	        '}' ;
+		
+	action_name = js_identifier ;
 
 	attribute_type = primitive_type | "array" | "object" ;
 
@@ -738,15 +758,31 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	js_date = <a valid ECMAScript date as defined in chapter '20.3.1.16 Date Time String Format' of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
 
-## Device Model Instance 
+## Device Instance Description
 
-A **device model Instance** is a JSON file that implements the metadata, properties and actions of a device model.
+A **Device Instance Description** is a JSON file that describes a device that implements a Device Model.
+It contains the metadata, properties and actions keys of the device model and complements it with instance-specific 
+metadata and values for the properties.
 
 
-with the following EBNF grammar. 
 
-universal semantic annotations
+	standard_device_metadata =
+        	[ '"manufacturer"' ':' js_string ',' ]
+        	[ '"modelNumber"' ':' js_string ',' ]
+        	[ '"serialNumber"' ':' js_string ',' ]
+        	[ '"hardwareRevision"' ':' js_string ',' ]
+        	[ '"softwareRevision"' ':' js_string ','] 
+		[ '"loc_latitude"' ':' js_number ',' 
+		  '"loc_longitude"' ':' js_number ',' 
+		  '"loc_height"' ':' js_number ',' ]
+	   	'"deviceDescription"' ':' "<human-readable description as js_string>" ','
+	   	'"deviceCreated"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
+	   	'"deviceCreatedAsString"' ':' js_date ','
+	   	'"deviceLastModified"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
+	    	'"deviceLastModifiedAsString"' ':' js_date ','
+	    	'"deviceUserLastModified"' ':' js_string ;
 
+A device instance may implement multiple device models.
 
 ## Device API 
 
