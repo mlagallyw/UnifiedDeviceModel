@@ -15,7 +15,7 @@ This abstract model of a device can be applied to all devices in the market. It 
 
 ## Purpose of a Device Model
 
-A device model can be used to create applications that interacts with a device. In today's world, specific applications have to be written per device class. These applications typically operate with an implicit model of a device, i.e. they contain code to manipulate device properties or to call actions. The programmer has to read a device manual to implement his application.
+A device model can be used to create applications that interact with a device. In today's world, specific applications have to be written per device class. These applications typically operate with an implicit model of a device, i.e. they contain code to manipulate device properties or to call actions. The programmer has to read a device manual to implement his application.
 
 With a device model a more generic application (or library) can be created, which can interact with all devices that implement this common description. This reduces the effort for the integration of devices in IoT scenarios.
 
@@ -37,7 +37,7 @@ It enables migration scenarios where devices can continue to be used when one of
 
 ## Background 
 
-The UDM specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
+The Unified Device Model specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
 
 ##### W3C Web of Things 
 [https://w3c.github.io/wot-thing-description/]()
@@ -53,13 +53,16 @@ The UDM specification is influenced by products from major cloud vendors and IoT
 
 ## Terminology
 
+The following section contains terminology definitions that are used by this specification. Not that some
+products in the market use the same concepts under a different terminology, e.g. "attributes" for "properties", or "properties" for "class or devcie metadata".
+
 * Device (Device-Instance)
 	
 	A physical or logical entity that is managed by an IoT Cloud Service
 	
-* Device class
+* Device Class
 	
-	A blueprint of a group of devices that have the same properties and actions
+	A group of devices that implement the same Device Model
 	
 * Digital Twin
 
@@ -80,8 +83,14 @@ The UDM specification is influenced by products from major cloud vendors and IoT
 * Metadata  
 	A part of the device that contains values that describe the device class or device instance
 
+* Class Metadata  
+	Metadata elements that are common for all devices of the class.
+	
+* Device Metadata (Instance Metadata) 
+	Metadata elements that apply for instances of the class. Examples are the geographic location, software version, name, id.
+
 * Messages  
-  data that is sent between the device and the cloud
+  	Data that is being sent between the device and the cloud
   
 
 ## Microsoft's device twin
@@ -567,12 +576,57 @@ Properties can be read and some of them can be written by the cloud application.
 
 A cloud application can invoke actions on the device. 
 
-An action has a name, a set of input parameters and a result value. An action is synchronous and can return a simple type as return value. 
+An action has a name, a set of input parameters and a result value. An action is synchronous and can return a simple type as return value. If an asynchronous action is required, it can be implemented in this model in different ways. 
+
+#### 1. polling
+
+For asynchronous actions where it is not time critical to immediately know the final result of the operation, it is sufficient to define a "check-status" action, that is polled by the caller. In this case, the action immediately returns with a unique action identifier, which then can be used to check the status of the action.
+It is recommended to preserve the status information only for a limited number of action calls and only for a limited time to ensure that the device is not flooded with action status context data. Cleanup could happen in a LRU manner, where the status check would return "unknown", if the action status is no longer known. 
+
+#### 2. callback
+
+For asynchronous operations, where the caller must be immediately notified about the result of the action, the caller has to register a callback which will be triggered when the action is finished. The callback mechanism may be implemented in various ways (long-polling, web-hooks, web-sockets) - from a model perspecitive it is important to ensure that callback context data is reclaimed when the caller is no longer listening. 
 
 ### Semantic types
 
 The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal  as well as domain-specific ontologies will be defined in the near future within different verticals. 
-A recommended set of universal semantic annotations is defined below.
+A recommended set of universal semantic annotations is defined below. They are based on the SI units https://en.wikipedia.org/wiki/International_System_of_Units and the https://en.wikipedia.org/wiki/United_States_customary_units.
+
+This specification does not give a preference to one of the systems, however it is recommended that implementations agree on a minimum set of supported types and units to ensure interoperability. The SI system is a good candidate for this purpose.
+
+semantic_type | Unit | Description | Notes |
+------------- | ---- | ----------- |-----|
+temp          | "C","F","K" | Temperature in Celsius, Fahrenheit, Temperature in Kelvin | |
+frequency     | "Hz", "KHz","MHz","GHz" | Frequency | |
+voltage       | "V","mV","uV","nV","kV"    | Voltage | |
+amperage      | "A","mA","uA","nA","kA"    | Electric Current | |
+resistance    | "Ohm","kOhm","MOhm"    | Resistance | |
+capacity      | "F","mF","uF","nF","pF" | Capacity | |
+inductivity   | "H","mH",uH" | Inductivity | |
+power         | "GW","MW","KW","W","mW","uW" | Power | |
+pressure      | "bar","mbar","atm","Pa","PSi" | |
+length        | "nm","um","mm","cm","dm","m","km","point","pica","inch","foot","yard","mile","au" | Length units | Additional units (Astronomical, US Survey or international nautical) to be added on demand |
+mass          | "g","Kg","t","dr","oz","lb","cwt","short ton","long ton" |
+time          | "utc","ps","us","ms","s","m","h","day","month","year" | | recommended to use UTC |
+area          | "mm2","cm2","dm2","m2","km2","a","ha","ft2","ch2","acre","mile2" | |
+volume        | "mm3","cm3","dm3","m3","in3","ft3" |
+fluid_volume  | "cl","dl","l","min","fl dr","tsp","Tbsp","fl oz","jig","gi","cp","pt","qt","gal","bbl" |  |
+luminous_intensity | "cd" | | Candela |
+logarithmic	| "B", "dB" | Logarthmic units used for field or power quantity | Bel and decibel |
+force		| "N", "kN" | | Newton |
+signal_strength | "dBm" | Mobile Phone signal strength | https://en.wikipedia.org/wiki/Mobile_phone_signal |
+ratio | "per cent", "per mil", "per myriad" | | |
+currency 	| "USD","JPY","CNY","EUR",... | ISO-4217 currency codes | https://en.wikipedia.org/wiki/ISO_4217 |
+language	| | ISO-639-1 language codes   | https://en.wikipedia.org/wiki/ISO_639-1 |
+country_2	| | ISO-3166 alpha-2 country code | 
+country_3	| | ISO-3166 3 character country code | 
+iban            | | https://en.wikipedia.org/wiki/International_Bank_Account_Number |
+bic             | | https://en.wikipedia.org/wiki/ISO_9362 |
+payment_card_number | | https://en.wikipedia.org/wiki/Payment_card_number |
+payment_card_cvc | | card verification code |
+
+Note: The references to Wikipedia articles are informative and have the purpose to explain the concepts.
+The cited standards contain the normative requirements.
 
 ### Protocols
 
@@ -592,7 +646,7 @@ If a device provides a device model description and exposes an API for accessing
 
 Since protocols and message formats are not part of the device model, these aspects are handled by an application on the device, which maps the device behavior to the cloud specific messaging mechanism.	
 	
-## Unified Device Model Description 
+## Device Model Description 
 
 A **device model description** is a JSON file with the following EBNF grammar. 
 
@@ -615,7 +669,6 @@ A **device model description** is a JSON file with the following EBNF grammar.
         [ '"serialNumber"' ':' js_string ',' ]
         [ '"hardwareRevision"' ':' js_string ',' ]
         [ '"softwareRevision"' ':' js_string ','] 
-  		[ '"softwareVersion"' ':' js_string ',' ]
 		[ '"author"' ':' js_string ',' ]
 		[ '"version"' ':' js_string ',' ]
 		[ '"loc_latitude"' ':' js_number ',' 
@@ -685,9 +738,12 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	js_date = <a valid ECMAScript date as defined in chapter '20.3.1.16 Date Time String Format' of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
 
-## Unified Device Model Instance 
+## Device Model Instance 
 
-A **device model Instance** is a JSON file with the following EBNF grammar. 
+A **device model Instance** is a JSON file that implements the metadata, properties and actions of a device model.
+
+
+with the following EBNF grammar. 
 
 universal semantic annotations
 
