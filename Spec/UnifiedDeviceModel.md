@@ -689,7 +689,7 @@ A **device model description** is a JSON file with the following EBNF grammar:
 		'"name"' ':' '"'js_identifier'"' ','
         	[ '"semantic_type"' ':' js_string "," ] 
 		[ '"author"' ':' js_string ',' ]
-		[ '"version"' ':' js_string ',' ]
+		'"version"' ':' js_string ','
 	   	'"description"' ':' "<human-readable description as js_string>" ','
 	   	'"created"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
 	   	'"createdAsString"' ':' js_date ','
