@@ -3,11 +3,11 @@
 ## What is a Device Model?
 
 A device model is a formal description of a class of physical devices.
-The description contains entries for metadata fields (tags), properties and actions.
+The description contains entries for metadata fields (tags), attributes (properties) and actions.
 
 Metadata fields contain static values such as "device manufacturer", "hardware version", "creation date".
 
-Properties contain values that typically change over time, such as sensor readings, actuator settings, status values or configuration information.
+Attributes (properties) contain values that typically change over time, such as sensor readings, actuator settings, status values or configuration information.
 
 Actions are called to trigger an activity on the device.
 
@@ -15,7 +15,7 @@ This abstract model of a device can be applied to all devices in the market. It 
 
 ## Purpose of a Device Model
 
-A device model can be used to create applications that interacts with a device. In today's world, specific applications have to be written per device class. These applications typically operate with an implicit model of a device, i.e. they contain code to manipulate device properties or to call actions. The programmer has to read a device manual to implement his application.
+A device model can be used to create applications that interact with a device. In today's world, specific applications have to be written per device class. These applications typically operate with an implicit model of a device, i.e. they contain code to manipulate device properties or to call actions. The programmer has to read a device manual to implement his application.
 
 With a device model a more generic application (or library) can be created, which can interact with all devices that implement this common description. This reduces the effort for the integration of devices in IoT scenarios.
 
@@ -24,20 +24,20 @@ With a device model a more generic application (or library) can be created, whic
 There are several device models in the market, which are used in conjunction with specific protocols or define a generic mechanism for protocol binding.
 Some of them are standardised in different SDOs such as the W3C, OCF, IPSO and others.
 
-Large IoT cloud vendors also use different models in their products. Some of them only define metadata and properties but leave it to the applications to handle actions and messages.
+Large IoT cloud vendors also use different models in their products. Some of them only define metadata and attributes (properties) but leave it to the applications to handle actions and messages.
 
 This fragmentation limits interoperability and market adoption of IoT devices.
 
 The benefit of a unified device model is to simplify device integration and interoperability between (typically small embedded) devices and IoT service platforms from multiple vendors.
 
-A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufacturers and cloud vendors.
+A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufactureres and cloud vendors.
 It protects the customer investment and makes device and applications future-proof, since it enables easy integration across multiple clouds.
 
 It enables migration scenarios where devices can continue to be used when one of the cloud platform providers discontinues his service.
 
 ## Background
 
-The UDM specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
+The Unified Device Model specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
 
 ##### W3C Web of Things
 [https://w3c.github.io/wot-thing-description/]()
@@ -60,7 +60,7 @@ products in the market use the same concepts under a different terminology, e.g.
 
 	A physical or logical entity that is managed by an IoT Cloud Service
 
-* Device class
+* Device Class
 
 	A group of devices that implement the same Device Model
 
@@ -85,13 +85,12 @@ products in the market use the same concepts under a different terminology, e.g.
 
 * Class Metadata  
 	Metadata elements that are common for all devices of the class.
-	
-* Device Metadata (Instance Metadata) 
+
+* Device Metadata (Instance Metadata)
 	Metadata elements that apply for instances of the class. Examples are the geographic location, software version, name, id.
 
-
 * Messages  
-  data that is sent between the device and the cloud
+  	Data that is being sent between the device and the cloud
 
 
 ## Microsoft's device twin
@@ -563,7 +562,7 @@ The model is intentionally kept as simple as possible to accomodate for very res
 The device model serves as an intermediate between devices and cloud services. Since it describes the device in an abstract way, it does not contain protocol bindings.
 Rather it defines the commonalities of a device, which are available for all connected cloud services:
 
-All devices contain metadata, properties and actions.
+All devices contain metadata, attributes (properties) and actions.
 
 ### Metadata
 
@@ -577,19 +576,20 @@ Properties can be read and some of them can be written by the cloud application.
 
 A cloud application can invoke actions on the device.
 
-An action has a name, a set of input parameters and a result value. An action is synchronous and can return a simple type as return value.
+An action has a name, a set of input parameters and a result value. An action is synchronous and can return a simple type as return value. If an asynchronous action is required, it can be implemented in this model in different ways.
+
 #### 1. polling
 
 For asynchronous actions where it is not time critical to immediately know the final result of the operation, it is sufficient to define a "check-status" action, that is polled by the caller. In this case, the action immediately returns with a unique action identifier, which then can be used to check the status of the action.
-It is recommended to preserve the status information only for a limited number of action calls and only for a limited time to ensure that the device is not flooded with action status context data. Cleanup could happen in a LRU manner, where the status check would return "unknown", if the action status is no longer known. 
+It is recommended to preserve the status information only for a limited number of action calls and only for a limited time to ensure that the device is not flooded with action status context data. Cleanup could happen in a LRU manner, where the status check would return "unknown", if the action status is no longer known.
 
 #### 2. callback
 
-For asynchronous operations, where the caller must be immediately notified about the result of the action, the caller has to register a callback which will be triggered when the action is finished. The callback mechanism may be implemented in various ways (long-polling, web-hooks, web-sockets) - from a model perspecitive it is important to ensure that callback context data is reclaimed when the caller is no longer listening. 
+For asynchronous operations, where the caller must be immediately notified about the result of the action, the caller has to register a callback which will be triggered when the action is finished. The callback mechanism may be implemented in various ways (long-polling, web-hooks, web-sockets) - from a model perspecitive it is important to ensure that callback context data is reclaimed when the caller is no longer listening.
 
 ### Semantic types
 
-The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal as well as domain-specific ontologies will be defined in the near future within different verticals. 
+The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal as well as domain-specific ontologies will be defined in the near future within different verticals.
 
 #### Semantic device types
 
@@ -627,8 +627,8 @@ signal_strength | "dBm" | Mobile Phone signal strength | https://en.wikipedia.or
 ratio | "per cent", "per mil", "per myriad" | | |
 currency 	| "USD","JPY","CNY","EUR",... | ISO-4217 currency codes | https://en.wikipedia.org/wiki/ISO_4217 |
 language	| | ISO-639-1 language codes   | https://en.wikipedia.org/wiki/ISO_639-1 |
-country_2	| | ISO-3166 alpha-2 country code | 
-country_3	| | ISO-3166 3 character country code | 
+country_2	| | ISO-3166 alpha-2 country code |
+country_3	| | ISO-3166 3 character country code |
 iban            | | https://en.wikipedia.org/wiki/International_Bank_Account_Number |
 bic             | | https://en.wikipedia.org/wiki/ISO_9362 |
 payment_card_number | | https://en.wikipedia.org/wiki/Payment_card_number |
@@ -644,9 +644,9 @@ are marked with these types.
 
 ==-- needs more work --==
 
-* get 
+* get
 * put
-* post 
+* post
 * delete
 * invoke
 * reset
@@ -657,11 +657,11 @@ A device is typically bound to a communication protocol on the cloud facing side
 
 On the (local) network facing side a suite of both standard as well as proprietary protocols is used.
 
-Protocols and message formats are abstracted in this device model and are encapsulated either in the device to local network implementation or the generic proxy library.
+Protocols and message formats are abstracted in this device model and are encasulated either in the device to local network implementation or the generic proxy library.
 
 ### Generic proxy library
 
-If a device provides a device model description and exposes an API for accessing the properties and actions, it is possible to bind the device via a common library to different IoT cloud services. This library is the same for all kinds of devices and contains adapters for different cloud services. The adapters take care of the protocol interaction between the device and the cloud service.   
+If a device provides a device model description and exposes an API for accessing the attributes and actions, it is possible to bind the device via a common library to different IoT cloud services. This library is the same for all kinds of devices and contains adapters for different cloud services. The adapters take care of the protocol interaction between the device and the cloud service.   
 
 ![](common-library.png)
 
@@ -669,13 +669,13 @@ If a device provides a device model description and exposes an API for accessing
 
 Since protocols and message formats are not part of the device model, these aspects are handled by an application on the device, which maps the device behavior to the cloud specific messaging mechanism.
 
-## Unified Device Model Description
+## Device Model Description
 
-A **device model description** is a JSON file with the following EBNF grammar.
+A **device model description** is a JSON file with the following EBNF grammar:
 
 	device_model_description = '{'
    			metadata_section
-   			[ property_section ]
+   			[ attribute_section ]
    			[ action_section ]
 		'}' ;
 
@@ -686,52 +686,55 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	standard_metadata =
 		'"urn"' ':' '"'urn_type'"' ','
 		'"name"' ':' '"'js_identifier'"' ','
-        [ '"semantic_type"' ':' js_string "," ]
+        	[ '"semantic_type"' ':' js_string "," ]
 		[ '"author"' ':' js_string ',' ]
-		[ '"version"' ':' js_string ',' ]
+		'"version"' ':' js_string ','
 	   	'"description"' ':' "<human-readable description as js_string>" ','
 	   	'"created"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
 	   	'"createdAsString"' ':' js_date ','
 	   	'"lastModified"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
-	    '"lastModifiedAsString"' ':' js_date ','
-	    '"userLastModified"' ':' js_string ;
+	    	'"lastModifiedAsString"' ':' js_date ','
+	    	'"userLastModified"' ':' js_string ;
 
 	vendor_extension_metadata =
-		js_identifier ':' value_type |
-		 [ js_identifier ':' value_type ',' vendor_extension_metadata ]
+		"vnd_"js_identifier ':' value_type |
+		 [ "vnd_"js_identifier ':' value_type ',' vendor_extension_metadata ] ;
 
-	property_section = '"properties"' ':' '[' property_declarations ']' ',' ;
+	attribute_section = '"properties"' ':' '[' attribute_declarations ']' ',' ;
 
-	property_declaration = property |
-		[ property ',' property_declaration ]
+	attribute_declaration = attribute |
+		[ attribute ',' attribute_declaration ] ;
 
-	property = "property_name" ':' '{'
-	            '"name"' ':' js_string ","
-	            [ '"alias"' ':' js_string "," ]
+	attribute = attribute_name ":" '{'
+	            [ '"name"' ':' attribute_name "," ]    
+	            [ '"alias"' ':' js_identifier "," ]
 	            '"description"' ':' js_string ","
-	            '"type"' ':' property_type ","
-	            [ '"semantic_type"' ':' js_string "," ]
+	            '"type"' ':' attribute_type ","
+	            [ '"semantic_type"' ':' js_identifier "," ]
 	            [ '"unit"' ':' js_string "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' "," ]
 	            '"writable"' ':' 'true' | 'false'
-	        	'}' ;
+	        '}' ;
+
+	attribute_name = js_identifier ;
 
 	action_section = '"actions"' ':' '[' action_declarations ']' ',' ;
 
 	action_declaration = action |
-		[ action ',' action_declaration ]
+		[ action ',' action_declaration ] ;
+
 	action = action_name ":" '{'
 	            [ '"name"' ':' action_name "," ]
 	            [ '"alias"' ':' js_identifier "," ]
-	            [ '"semantic_type"' ':' js_identifier "," ] 
+	            '"description"' ':' js_string ","
+	            [ '"semantic_type"' ':' js_identifier "," ]
 	            [ '"argType"' ':' attribute_type "," ]
-	            [ '"argType"' ':' primitive_type "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' ]
-	        	'}' ;	
-        	
+	        '}' ;
+
 	action_name = js_identifier ;
 
-	property_type = primitive_type | "array" | "object" ;
+	attribute_type = primitive_type | "array" | "object" ;
 
 	primitive_type = "number" | "string" | "boolean" | "datetime" | "integer" | "uri" ;
 
@@ -751,13 +754,13 @@ A **device model description** is a JSON file with the following EBNF grammar.
 	js_language_type = <a valid ECMAScript language type as defined in
 	chapter 6 of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
 
-
 	js_date = <a valid ECMAScript date as defined in chapter '20.3.1.16 Date Time String Format' of http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf>
+
 
 ## Device Instance Description
 
 A **Device Instance Description** is a JSON file that describes a device that implements a Device Model.
-It contains the metadata, properties and actions keys of the device model and complements it with instance-specific 
+It contains the metadata, properties and actions keys of the device model and complements it with instance-specific
 metadata and values for the properties.
 
 
@@ -767,9 +770,9 @@ metadata and values for the properties.
         	[ '"modelNumber"' ':' js_string ',' ]
         	[ '"serialNumber"' ':' js_string ',' ]
         	[ '"hardwareRevision"' ':' js_string ',' ]
-        	[ '"softwareRevision"' ':' js_string ','] 
-		[ '"loc_latitude"' ':' js_number ',' 
-		  '"loc_longitude"' ':' js_number ',' 
+        	[ '"softwareRevision"' ':' js_string ',']
+		[ '"loc_latitude"' ':' js_number ','
+		  '"loc_longitude"' ':' js_number ','
 		  '"loc_height"' ':' js_number ',' ]
 	   	'"deviceDescription"' ':' "<human-readable description as js_string>" ','
 	   	'"deviceCreated"' ':' js_number ',' /* time in milliseconds since 01 January, 1970 UTC */
@@ -779,8 +782,6 @@ metadata and values for the properties.
 	    	'"deviceUserLastModified"' ':' js_string ;
 
 A device instance may implement multiple device models.
-
-
 
 ## Device API
 
