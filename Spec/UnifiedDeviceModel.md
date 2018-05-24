@@ -30,14 +30,14 @@ This fragmentation limits interoperability and market adoption of IoT devices.
 
 The benefit of a unified device model is to simplify device integration and interoperability between (typically small embedded) devices and IoT service platforms from multiple vendors.
 
-A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufactureres and cloud vendors.
+A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufacturers and cloud vendors.
 It protects the customer investment and makes device and applications future-proof, since it enables easy integration across multiple clouds.
 
 It enables migration scenarios where devices can continue to be used when one of the cloud platform providers discontinues his service.
 
 ## Background
 
-The Unified Device Model specification is influenced by products from major cloud vendors and IoT standards, including but not limited to:
+The Unified Device Model is influenced by products from major cloud vendors and IoT standards, including but not limited to:
 
 ##### W3C Web of Things
 [https://w3c.github.io/wot-thing-description/]()
@@ -605,7 +605,7 @@ This specification does not give a preference to one of the systems, however it 
 
 semantic_type | Unit | Description | Notes |
 ------------- | ---- | ----------- |-----|
-temp          | "C","F","K" | Temperature in Celsius, Fahrenheit, Temperature in Kelvin | |
+temperature   | "C","F","K" | Temperature in Celsius, Fahrenheit, Temperature in Kelvin | |
 frequency     | "Hz", "KHz","MHz","GHz" | Frequency | |
 voltage       | "V","mV","uV","nV","kV"    | Voltage | |
 amperage      | "A","mA","uA","nA","kA"    | Electric Current | |
