@@ -3,11 +3,11 @@
 ## What is a Device Model?
 
 A device model is a formal description of a class of physical devices.
-The description contains entries for metadata fields (tags), attributes (properties) and actions.
+The description contains entries for metadata fields (tags), properties (attributes) and actions.
 
 Metadata fields contain static values such as "device manufacturer", "hardware version", "creation date".
 
-Attributes (properties) contain values that typically change over time, such as sensor readings, actuator settings, status values or configuration information.
+Properties contain values that typically change over time, such as sensor readings, actuator settings, status values or configuration information.
 
 Actions are called to trigger an activity on the device.
 
@@ -24,7 +24,7 @@ With a device model a more generic application (or library) can be created, whic
 There are several device models in the market, which are used in conjunction with specific protocols or define a generic mechanism for protocol binding.
 Some of them are standardised in different SDOs such as the W3C, OCF, IPSO and others.
 
-Large IoT cloud vendors also use different models in their products. Some of them only define metadata and attributes (properties) but leave it to the applications to handle actions and messages.
+Large IoT cloud vendors also use different models in their products. Some of them only define metadata and properties but leave it to the applications to handle actions and messages.
 
 This fragmentation limits interoperability and market adoption of IoT devices.
 
@@ -562,7 +562,7 @@ The model is intentionally kept as simple as possible to accomodate for very res
 The device model serves as an intermediate between devices and cloud services. Since it describes the device in an abstract way, it does not contain protocol bindings.
 Rather it defines the commonalities of a device, which are available for all connected cloud services:
 
-All devices contain metadata, attributes (properties) and actions.
+All devices contain metadata, properties and actions.
 
 ### Metadata
 
@@ -591,9 +591,9 @@ For asynchronous operations, where the caller must be immediately notified about
 
 The device model itself as well as the properties and actions include a way to annotate them with a semantic type. The semantic type is optional - however it is strongly recommended to include semantic annotations in all device models for documentation purposes. It is expected that a set of universal as well as domain-specific ontologies will be defined in the near future within different verticals.
 
-#### Semantic device types
+#### Semantic types for devices
 
-A  set of semantic annotations for devices is defined below. A device can implement multiple device types simultaneously.
+A set of semantic types for devices will be defined in a later version of this specification. A device can implement multiple device types simultaneously.
 
 ==-- needs more work --==
 
@@ -661,7 +661,7 @@ Protocols and message formats are abstracted in this device model and are encasu
 
 ### Generic proxy library
 
-If a device provides a device model description and exposes an API for accessing the attributes and actions, it is possible to bind the device via a common library to different IoT cloud services. This library is the same for all kinds of devices and contains adapters for different cloud services. The adapters take care of the protocol interaction between the device and the cloud service.   
+If a device provides a device model description and exposes an API for accessing the properties and actions, it is possible to bind the device via a common library to different IoT cloud services. This library is the same for all kinds of devices and contains adapters for different cloud services. The adapters take care of the protocol interaction between the device and the cloud service.   
 
 ![](common-library.png)
 
@@ -675,7 +675,7 @@ A **device model description** is a JSON file with the following EBNF grammar:
 
 	device_model_description = '{'
    			metadata_section
-   			[ attribute_section ]
+   			[ property_section ]
    			[ action_section ]
 		'}' ;
 
@@ -700,23 +700,23 @@ A **device model description** is a JSON file with the following EBNF grammar:
 		"vnd_"js_identifier ':' value_type |
 		 [ "vnd_"js_identifier ':' value_type ',' vendor_extension_metadata ] ;
 
-	attribute_section = '"properties"' ':' '[' attribute_declarations ']' ',' ;
+	property_section = '"properties"' ':' '[' property_declarations ']' ',' ;
 
-	attribute_declaration = attribute |
-		[ attribute ',' attribute_declaration ] ;
+	property_declaration = property |
+		[ property ',' property_declaration ] ;
 
-	attribute = attribute_name ":" '{'
-	            [ '"name"' ':' attribute_name "," ]    
+	property = property_name ":" '{'
+	            [ '"name"' ':' property_name "," ]    
 	            [ '"alias"' ':' js_identifier "," ]
 	            '"description"' ':' js_string ","
-	            '"type"' ':' attribute_type ","
+	            '"type"' ':' property_type ","
 	            [ '"semantic_type"' ':' js_identifier "," ]
 	            [ '"unit"' ':' js_string "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' "," ]
 	            '"writable"' ':' 'true' | 'false'
 	        '}' ;
 
-	attribute_name = js_identifier ;
+	property_name = js_identifier ;
 
 	action_section = '"actions"' ':' '[' action_declarations ']' ',' ;
 
@@ -728,13 +728,13 @@ A **device model description** is a JSON file with the following EBNF grammar:
 	            [ '"alias"' ':' js_identifier "," ]
 	            '"description"' ':' js_string ","
 	            [ '"semantic_type"' ':' js_identifier "," ]
-	            [ '"argType"' ':' attribute_type "," ]
+	            [ '"argType"' ':' property_type "," ]
 	            [ '"range"' ':' '"' js_number ',' js_number '"' ]
 	        '}' ;
 
 	action_name = js_identifier ;
 
-	attribute_type = primitive_type | "array" | "object" ;
+	property_type = primitive_type | "array" | "object" ;
 
 	primitive_type = "number" | "string" | "boolean" | "datetime" | "integer" | "uri" ;
 
@@ -762,8 +762,6 @@ A **device model description** is a JSON file with the following EBNF grammar:
 A **Device Instance Description** is a JSON file that describes a device that implements a Device Model.
 It contains the metadata, properties and actions keys of the device model and complements it with instance-specific
 metadata and values for the properties.
-
-
 
 	standard_device_metadata =
         	[ '"manufacturer"' ':' js_string ',' ]
