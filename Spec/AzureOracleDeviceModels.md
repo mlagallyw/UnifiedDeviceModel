@@ -19,7 +19,7 @@ A device model can be used to create applications that interact with a device. I
 
 With a device model a more generic application (or library) can be created, which can interact with all devices that implement this common description. This reduces the effort for the integration of devices in IoT scenarios.
 
-## Why a *Unified* Device Model?
+## Purpose of this document
 
 There are several device models in the market, which are used in conjunction with specific protocols or define a generic mechanism for protocol binding.
 Some of them are standardised in different SDOs such as the W3C, OCF, IPSO and others.
@@ -28,16 +28,16 @@ Large IoT cloud vendors also use different models in their products. Some of the
 
 This fragmentation limits interoperability and market adoption of IoT devices.
 
-The benefit of a unified device model is to simplify device integration and interoperability between (typically small embedded) devices and IoT service platforms from multiple vendors.
+This analysis was conducted to identify commonalities of two real-world device models to lay the groundwork for a unified device model, which serves as a common abstraction across cloud and device platforms. The benefit of a unified device model is to simplify device integration and interoperability between (typically small embedded) devices and IoT service platforms from multiple vendors.
 
 A high level of interoperability brings faster time-to-market, since it minimizes the integration effort between device manufacturers and cloud vendors.
 It protects the customer investment and makes device and applications future-proof, since it enables easy integration across multiple clouds.
 
-It enables migration scenarios where devices can continue to be used when one of the cloud platform providers discontinues his service.
+Furthermore it enables migration scenarios, where devices can continue to be used when one of the cloud platform providers discontinues his service.
 
 ## Background
 
-The Unified Device Model is influenced by products from major cloud vendors and IoT standards, including but not limited to:
+Products from major cloud vendors and IoT standards:
 
 ##### W3C Web of Things
 [https://w3c.github.io/wot-thing-description/]()
