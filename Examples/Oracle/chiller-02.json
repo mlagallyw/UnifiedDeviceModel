@@ -1,7 +1,7 @@
 {
   "urn": "urn:com:oracle:iot:chiller-02",
   "name": "chiller-02",
-  "description": "Faulty chiller with wrong pressure sensor. Pressure too high.",
+  "description": "chiller with temperature, humidity and pressure sensor.",
   "system": false,
   "draft": false,
   "created": 1524652689668,
