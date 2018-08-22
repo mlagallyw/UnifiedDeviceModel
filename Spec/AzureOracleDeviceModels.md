@@ -538,8 +538,7 @@ The properties in the **Microsoft device model** example are plain JSON values. 
 
 Both models define actions that can be performed on a device (and a device twin). The **Microsoft device model** does not define descriptions, alias or parameter types. All actions in the example do not contain parameters. The example binds each action to an implementation via a Javascript file.
 
-The **Oracle device model** defines actions with **only a single** parameter of a **primitive JSON** type. An action can have a
-description and an alias.
+The **Oracle device model** defines actions with **only a single** parameter of a **primitive JSON** type. An action can have a description and an alias.
 
 ### Message protocols and formats
 
